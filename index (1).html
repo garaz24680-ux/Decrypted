@@ -1,0 +1,1414 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="white" data-level="4">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decrypted</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Core Layout & Variable Definitions --- */
+        :root {
+            --bg-color: #0a0a0c;
+            --sidebar-bg: #121216;
+            --card-bg: #181820;
+            --text-color: #ffffff;
+            --text-muted: #8a8a98;
+            --accent-color: #ffffff; /* Dynamic based on settings */
+            --neon-glow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+            --font-family: 'Orbitron', sans-serif;
+        }
+
+        /* --- Look Level Overrides --- */
+        [data-level="3"] {
+            --font-family: 'Orbitron', sans-serif;
+        }
+        [data-level="2"] {
+            --font-family: 'Orbitron', sans-serif;
+            --neon-glow: none !important;
+        }
+        [data-level="1"] {
+            --font-family: 'Arial', sans-serif;
+            --neon-glow: none !important;
+        }
+
+        /* --- Theme Accent Colors --- */
+        [data-theme="red"] { --accent-color: #ff3333; }
+        [data-theme="orange"] { --accent-color: #ff9900; }
+        [data-theme="yellow"] { --accent-color: #ffff33; }
+        [data-theme="green"] { --accent-color: #33ff33; }
+        [data-theme="cyan"] { --accent-color: #33ffff; }
+        [data-theme="blue"] { --accent-color: #3333ff; }
+        [data-theme="purple"] { --accent-color: #9933ff; }
+        [data-theme="pink"] { --accent-color: #ff3399; }
+        [data-theme="white"] { --accent-color: #ffffff; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- Background Canvas Control --- */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.15;
+            transition: opacity 0.3s;
+        }
+        
+        /* Hide canvas on Levels 1 and 3 */
+        [data-level="1"] #bgCanvas,
+        [data-level="3"] #bgCanvas {
+            display: none !important;
+        }
+
+        /* --- Intro Animation Overlay Styling --- */
+        .intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Changa', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Stage 1 Text: ENCRYPTED PRESENTS */
+        .intro-stage1 {
+            font-size: 4rem;
+            color: var(--text-color);
+            letter-spacing: 4px;
+            animation: introGlow 2s infinite alternate, introGlitchTrigger 2s infinite step-end;
+            position: relative;
+        }
+
+        .intro-stage1::before,
+        .intro-stage1::after {
+            content: 'ENCRYPTED PRESENTS';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            overflow: hidden;
+        }
+
+        .intro-stage1::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 9999px, 56px, 0);
+            animation: glitchAnim1 2s infinite linear alternate-reverse;
+        }
+
+        .intro-stage1::after {
+            left: -2px;
+            text-shadow: -2px 0 #00fff0, 0 2px #ff00c1;
+            clip: rect(85px, 9999px, 140px, 0);
+            animation: glitchAnim2 2s infinite linear alternate-reverse;
+        }
+
+        /* Stage 2 Text Container */
+        .intro-stage2 {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .intro-title {
+            font-size: 3.5rem;
+            color: var(--text-color);
+            letter-spacing: 2px;
+            text-shadow: var(--neon-glow);
+        }
+
+        .intro-subtitle {
+            font-size: 1.8rem;
+            color: #ff3333; /* Sinister Red Accent tint */
+            text-shadow: 0 0 10px #ff3333;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Intro Global Keyframe Utilities */
+        @keyframes introGlow {
+            0% { text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+            100% { text-shadow: var(--neon-glow); }
+        }
+
+        @keyframes introGlitchTrigger {
+            0%, 90%, 100% { transform: none; opacity: 1; }
+            92% { transform: skewX(-15deg) skewY(2deg); opacity: 0.9; }
+            94% { transform: skewX(10deg); opacity: 0.95; }
+            96% { transform: opacity: 0.8; }
+            98% { transform: skewX(-5deg); }
+        }
+
+        /* Fade animation used via Javascript runtime */
+        .fade-out-active {
+            transition: opacity 1s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            padding: 20px 0;
+        }
+.sidebar-brand {
+            padding: 10px 25px 25px 25px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            text-shadow: var(--neon-glow);
+        }
+
+        .nav-tabs {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 15px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-family: var(--font-family);
+            font-size: 0.9rem;
+            text-align: left;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-btn.active {
+            color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            text-shadow: var(--neon-glow);
+            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.02);
+        }
+
+        /* --- Main Content Window --- */
+        .main-content {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .tab-panel {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* --- Home Tab & Glitch Animation --- */
+        #home-tab {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        #home-tab.active {
+            display: flex;
+        }
+
+        .glitch-text {
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 6px;
+            color: var(--text-color);
+            position: relative;
+            animation: textGlow 2s infinite alternate;
+        }
+
+        [data-level="4"] .glitch-text, 
+        [data-level="3"] .glitch-text {
+            animation: glitchTrigger 2s infinite step-end, textGlow 2s infinite alternate;
+        }
+
+        [data-level="4"] .glitch-text::before,
+        [data-level="4"] .glitch-text::after,
+        [data-level="3"] .glitch-text::before,
+        [data-level="3"] .glitch-text::after {
+            content: 'DECRYPTED';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            overflow: hidden;
+        }
+
+        [data-level="4"] .glitch-text::before,
+        [data-level="3"] .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitchAnim1 2s infinite linear alternate-reverse;
+        }
+
+        [data-level="4"] .glitch-text::after,
+        [data-level="3"] .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 #00fff0, 0 2px #ff00c1;
+            clip: rect(85px, 450px, 140px, 0);
+            animation: glitchAnim2 2s infinite linear alternate-reverse;
+        }
+
+        /* Level 1 & 2 overrides: Disable text glow completely */
+        [data-level="1"] .glitch-text,
+        [data-level="2"] .glitch-text {
+            animation: none !important;
+            text-shadow: none !important;
+        }
+
+        /* --- Keyframe Animations --- */
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+            100% { text-shadow: var(--neon-glow); }
+        }
+
+        @keyframes glitchTrigger {
+            0%, 90%, 100% { transform: none; opacity: 1; }
+            92% { transform: skewX(-15deg) skewY(2deg); opacity: 0.9; }
+            94% { transform: skewX(10deg); opacity: 0.95; }
+            96% { transform: opacity: 0.8; }
+            98% { transform: skewX(-5deg); }
+        }
+
+        @keyframes glitchAnim1 {
+            0%, 90% { clip: rect(0, 0, 0, 0); }
+            91% { clip: rect(20px, 9999px, 40px, 0); }
+            95% { clip: rect(60px, 9999px, 80px, 0); }
+            100% { clip: rect(0, 0, 0, 0); }
+        }
+
+        @keyframes glitchAnim2 {
+            0%, 90% { clip: rect(0, 0, 0, 0); }
+            92% { clip: rect(10px, 9999px, 50px, 0); }
+            97% { clip: rect(90px, 9999px, 130px, 0); }
+            100% { clip: rect(0, 0, 0, 0); }
+        }
+
+        /* --- Internal Embedded Proxy Frame --- */
+        .proxy-view-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+        .proxy-view-bar {
+            background: var(--sidebar-bg);
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .proxy-view-bar span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: var(--font-family);
+        }
+        .proxy-close-btn {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            text-shadow: var(--neon-glow);
+            box-shadow: var(--neon-glow);
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .proxy-close-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+            text-shadow: none;
+        }
+        .proxy-frame {
+            width: 100%;
+            flex: 1;
+            border: none;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-landing-overlay" class="intro-overlay">
+        <div id="intro-text-stage1" class="intro-stage1">Welcome to </div>
+        <div id="intro-text-stage2" class="intro-stage2">
+            <div class="intro-title">DECRYPTED</div>
+            <div class="intro-subtitle">The unblocked idk what to say any more</div>
+        </div>
+    </div>
+
+    <canvas id="bgCanvas"></canvas>
+<div id="proxy-view-container" class="proxy-view-container">
+        <div class="proxy-view-bar">
+            <span id="proxy-current-url">Loading internal network link...</span>
+            <button class="proxy-close-btn" onclick="closeProxyFrame()">Close Window</button>
+        </div>
+        <iframe id="proxy-internal-frame" class="proxy-frame" sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+    </div>
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">SYSTEM</div>
+        <ul class="nav-tabs">
+            <li><button class="nav-btn active" onclick="switchTab('home')">HOME</button></li>
+            <li><button class="nav-btn" onclick="switchTab('disclaimers')">DISCLAIMERS</button></li>
+            <li><button class="nav-btn" onclick="switchTab('proxies')">PR0XI3S</button></li>
+            <li><button class="nav-btn" onclick="switchTab('games')">G@ME$</button></li>
+            <li><button class="nav-btn" onclick="switchTab('movies')">M0VIES</button></li>
+            <li><button class="nav-btn" onclick="switchTab('browse')">BROWSE</button></li>
+            <li><button class="nav-btn" onclick="switchTab('settings')">SETTINGS</button></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        
+        <section id="home-panel" class="tab-panel active">
+            <div id="home-tab" class="active">
+                <div class="glitch-text">DECRYPTED</div>
+            </div>
+        </section>
+
+        <section id="disclaimers-panel" class="tab-panel">
+            <style>
+                .disclaimers-container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+                .disclaimers-title {
+                    font-size: 2.5rem;
+                    color: var(--accent-color);
+                    text-shadow: var(--neon-glow);
+                    margin-bottom: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                }
+                .disclaimers-subtitle {
+                    color: var(--text-muted);
+                    font-size: 1.1rem;
+                    margin-bottom: 30px;
+                    font-style: italic;
+                }
+                .disclaimers-list {
+                    list-style-type: none;
+                    counter-reset: disclaimer-counter;
+                }
+                .disclaimers-list li {
+                    counter-increment: disclaimer-counter;
+                    background-color: var(--card-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    padding: 20px;
+                    margin-bottom: 15px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: flex-start;
+                    transition: border-color 0.2s;
+                }
+                .disclaimers-list li::before {
+                    content: counter(disclaimer-counter) ".";
+                    color: var(--accent-color);
+                    font-weight: bold;
+                    margin-right: 15px;
+                    text-shadow: var(--neon-glow);
+                }
+            </style>
+            <div class="disclaimers-container">
+                <h1 class="disclaimers-title">Disclaimers</h1>
+                <p class="disclaimers-subtitle">Please read all disclaimers before use</p>
+                <ul class="disclaimers-list">
+                    <li>This site was made using AI</li>
+                    <li>You are allowed to use this site in docs and slides</li>
+                    <li>We are not responsible for any trouble you get in, only share with trusted people</li>
+                    <li>We do not claim any of these M0VIES or PR0XI3S we just provide</li>
+                    <li>We did not make these M0VI3S or find these PR0XI3S we took some from other docs</li>
+                    <li>We are just made to entertain kids at school</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="proxies-panel" class="tab-panel">
+            <style>
+                .proxy-section {
+                    margin-bottom: 40px;
+                }
+                .proxy-title {
+                    font-size: 1.5rem;
+                    color: var(--accent-color);
+                    text-shadow: var(--neon-glow);
+                    margin-bottom: 15px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    padding-bottom: 5px;
+                    letter-spacing: 1px;
+                }
+                .proxy-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    gap: 12px;
+                }
+                .proxy-btn {
+                    background: var(--card-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    color: var(--text-color);
+                    padding: 12px 15px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-family: var(--font-family);
+                    font-size: 0.8rem;
+                    text-align: left;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    transition: all 0.2s;
+                }
+                .proxy-btn:hover {
+                    border-color: var(--accent-color);
+                    box-shadow: var(--neon-glow);
+                    transform: translateY(-2px);
+                }
+            </style>
+            
+            <div class="proxy-section">
+                <h2 class="proxy-title">DogeUb</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://instructure.storage.googleapis.com/index.html')">https://instructure.storage.googleapis.com/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://storage.googleapis.com/canvas-lms/index.html')">https://storage.googleapis.com/canvas-lms/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://storage.googleapis.com/educationate/index.html')">https://storage.googleapis.com/educationate/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://storage.googleapis.com/instructure/index.html')">https://storage.googleapis.com/instructure/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://storage.googleapis.com/dogeub/index.html')">https://storage.googleapis.com/dogeub/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/deltamath-demo/index.html')">https://s3.amazonaws.com/deltamath-demo/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/educationate/index.html')">https://s3.amazonaws.com/educationate/index.html</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">Truffled</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://tuffle.infotechnology.com/')">https://tuffle.infotechnology.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://hi.infotechnology.com/')">https://hi.infotechnology.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://historylesson.xyz/')">https://historylesson.xyz/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://truffled.lol/')">https://truffled.lol/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://educateandlearn.sciencevictory.com/')">https://educateandlearn.sciencevictory.com/</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">Fern</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/angelfern/index.html')">https://s3.amazonaws.com/angelfern/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/bullbestyoutuber/index.html')">https://s3.amazonaws.com/bullbestyoutuber/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/bullubg/index.html')">https://s3.amazonaws.com/bullubg/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/iloveliteratures/index.html')">https://s3.amazonaws.com/iloveliteratures/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/deaganfern/index.html')">https://s3.amazonaws.com/deaganfern/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/bulledu/index.html')">https://s3.amazonaws.com/bulledu/index.html</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">OverCloaked</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://overcloaked-v2.b-cdn.net/')">https://overcloaked-v2.b-cdn.net/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://overyourmom.turbo-education.com/overyourmom.turbo-education.com/index.html')">https://overyourmom.turbo-education.com/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/elliotslinks-tnjavxyp/class97840/index.html')">https://s3.amazonaws.com/elliotslinks-tnjavxyp/class97840/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://s3.amazonaws.com/elliotslinks-tnjavxyp/essay57323/index.html')">https://s3.amazonaws.com/elliotslinks-tnjavxyp/essay57323/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://overunder97.b-cdn.net/')">https://overunder97.b-cdn.net/</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">Shadow</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://lightpoems.hotelconsuladoinn.com/')">https://lightpoems.hotelconsuladoinn.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://history.awiki.org/')">https://history.awiki.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://bebanndakorou-scandj.accesscam.org/')">https://bebanndakorou-scandj.accesscam.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://rapidcalc.hotelconsuladoinn.com/')">https://rapidcalc.hotelconsuladoinn.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://wwwportal.app.dontdrinkthekoolaid.duckdns.org')">https://wwwportal.app.dontdrinkthekoolaid.duckdns.org</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://any.mercury.any64.de')">https://any.mercury.any64.de</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">Vapor</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://vapor.onl/')">https://vapor.onl/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://fidi.vaporized.help/')">https://fidi.vaporized.help/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://thealbanyfundforeducation.org/')">https://thealbanyfundforeducation.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://ixlwork.storage.googleapis.com/index.html')">https://ixlwork.storage.googleapis.com/index.html</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://vapor.dmvdriverseducation.org/')">https://vapor.dmvdriverseducation.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://nahidontneed.help/')">https://nahidontneed.help/</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">PeteZah</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://cdn.jsdelivr.net/gh/PeteZah-G/PeteZahStaticDone/main.svg')">https://cdn.jsdelivr.net/gh/PeteZah-G/PeteZahStaticDone/main.svg</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://edpgames.b-cdn.net/')">https://edpgames.b-cdn.net/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://petezahgames6.firebaseapp.com/')">https://petezahgames6.firebaseapp.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://cdn.jsdelivr.net/gh/PeteZah-G/copy-2@main/main.svg')">https://cdn.jsdelivr.net/gh/PeteZah-G/copy-2@main/main.svg</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">Utopia</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://brain.vocab.biddingtraveller.com/')">https://brain.vocab.biddingtraveller.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://brain.train.motossa.com/')">https://brain.train.motossa.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://base.add.inbluesolutions.com/')">https://base.add.inbluesolutions.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://focus.piano.patf.com/')">https://focus.piano.patf.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://linen.freeddns.org/')">https://linen.freeddns.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://arts.core.myhousedyn.com/')">https://arts.core.myhousedyn.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://facts.craft.michiganbowling.com/')">https://facts.craft.michiganbowling.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://real.how.puffballofevil.com/')">https://real.how.puffballofevil.com/</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">Space</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://space.zzylos.lol/')">https://space.zzylos.lol/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://welcome.primeent.in/')">https://welcome.primeent.in/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://use.footlooseandfancyrich.com/')">https://use.footlooseandfancyrich.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://turtle.happyforever.com/')">https://turtle.happyforever.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://gointospace.app.cdn.cloudflare.net/')">https://gointospace.app.cdn.cloudflare.net/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://star.cbass92.org/')">https://star.cbass92.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://entity.io-lng-en.com/')">https://entity.io-lng-en.com/</button>
+                </div>
+            </div>
+
+            <div class="proxy-section">
+                <h2 class="proxy-title">UniHub</h2>
+                <div class="proxy-grid">
+                    <button class="proxy-btn" onclick="openProxyFrame('https://ciaworldfactbook.daybits.net/')">https://ciaworldfactbook.daybits.net/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://learnaboutbillclinton.cencopro.cl/')">https://learnaboutbillclinton.cencopro.cl/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://aphistorytutoring.bisblick.org/')">https://aphistorytutoring.bisblick.org/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://imsovainthatinamelinksaftermyself.tjarba.com/')">https://imsovainthatinamelinksaftermyself.tjarba.com/</button>
+                    <button class="proxy-btn" onclick="openProxyFrame('https://aphistorytutoring.cencopro.cl/')">https://aphistorytutoring.cencopro.cl/</button>
+                </div>
+            </div>
+        </section>
+<section id="games-panel" class="tab-panel">
+            <style>
+                .game-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                    gap: 20px;
+                }
+                .game-card {
+                    background: var(--card-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 12px;
+                    padding: 25px 20px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    align-items: center;
+                    text-align: center;
+                    min-height: 160px;
+                    transition: all 0.3s ease;
+                }
+                .game-card:hover {
+                    border-color: var(--accent-color);
+                    box-shadow: var(--neon-glow);
+                    transform: translateY(-5px);
+                }
+                .game-title {
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    margin-bottom: 15px;
+                    color: var(--text-color);
+                }
+                .game-launch-btn {
+                    background: transparent;
+                    border: 1px solid var(--accent-color);
+                    color: var(--accent-color);
+                    font-family: var(--font-family);
+                    padding: 8px 20px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                    transition: all 0.2s;
+                    text-shadow: var(--neon-glow);
+                    box-shadow: inset 0 0 4px rgba(255,255,255,0.05);
+                }
+                .game-launch-btn:hover {
+                    background: var(--accent-color);
+                    color: #000;
+                    text-shadow: none;
+                }
+            </style>
+            <div class="game-grid">
+                <div class="game-card">
+                    <div class="game-title">1</div>
+                    <button class="game-launch-btn" onclick="window.open('https://drive.google.com/file/d/1FHBn4bOQAAK7eDos_yRqYdtKhgm6uEXl/view', '_blank')">Play Now</button>
+                </div>
+                
+            </div>
+        </section>
+<section id="movies-panel" class="tab-panel">
+            <style>
+                .movies-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                    gap: 20px;
+                }
+                .movie-card {
+                    background: var(--card-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 12px;
+                    padding: 25px 20px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    align-items: center;
+                    text-align: center;
+                    min-height: 160px;
+                    transition: all 0.3s ease;
+                }
+                .movie-card:hover {
+                    border-color: var(--accent-color);
+                    box-shadow: var(--neon-glow);
+                    transform: translateY(-5px);
+                }
+                .movie-title {
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    margin-bottom: 15px;
+                    color: var(--text-color);
+                }
+                .movie-launch-btn {
+                    background: transparent;
+                    border: 1px solid var(--accent-color);
+                    color: var(--accent-color);
+                    font-family: var(--font-family);
+                    padding: 8px 20px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                    transition: all 0.2s;
+                    text-shadow: var(--neon-glow);
+                    box-shadow: inset 0 0 4px rgba(255,255,255,0.05);
+                }
+                .movie-launch-btn:hover {
+                    background: var(--accent-color);
+                    color: #000;
+                    text-shadow: none;
+                }
+            </style>
+            <div class="movies-grid">
+                <div class="movie-card">
+                    <div class="movie-title">A Minecraft Movie</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1FHBn4bOQAAK7eDos_yRqYdtKhgm6uEXl/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">K Pop Demon Hunters</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1BP0UgTGQsBYXMeejlLiTVnLbXLAyLQHX/view?usp=sharing', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Despicable Me 4</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1siki1wYP3LpfjFpUT8Z9lJuJzl7MdBhX/view?t=2', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Deadpool and Wolverine</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1aBzsoTJAjhZeFFDkIV2SN7p7ZHagUEDc/view?t=375', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">The Super Mario Bros Movie</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1OsyF2LKJqjtv0b2Xd9GWOLcYkzny3VZo/view?t=4', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Five Nights at Freddy's</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1OyO1OdhtfwR883Uvi0QPP5iooGcxTVSY/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Five Nights at Freddy's 2</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1dW1XsOWtiL0mGHOFIB8n0rEhLPoa2buJ/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Spider Man across the Spider Verse</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1dSeZ1c4_p8T_lW7z0qpKsebKYN-R3zHR/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Sonic the Hedgehog 2</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/13YPdlfR1BTzXfqwmfbzfiuPycjQsh0Yb/view?usp=drive_link', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Superman</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1nO646VaJQBN725tPVe9TLFnLBFPJ-jbL/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Zootopia 2</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/10lys4xAmzALt_F081ej_9oP3i7Lm1Qgq/view?usp=sharing', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">The Mario Galaxy Movie</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1HE8XltEiu-CZCPVdFlltcgZg3CYOKKh-/view?usp=sharing', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">The Bad Guys 2</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1V9yPZr0YlrSthlfU2Df3mgrs9Mcnok4q/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Backrooms</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/18nLws3FusSwXgQxTmAv-JmQijlCytXzD/view', '_blank')">Watch Now</button>
+                </div>
+                <div class="movie-card">
+                    <div class="movie-title">Hoppers</div>
+                    <button class="movie-launch-btn" onclick="window.open('https://drive.google.com/file/d/1Fi2tkC8ocrYOTKPoJKxB4awDJp5tQJTN/view?usp=sharing', '_blank')">Watch Now</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="browse-panel" class="tab-panel">
+            <style>
+                .search-container {
+                    max-width: 750px;
+                    margin: 40px auto;
+                    text-align: center;
+                }
+                .search-title {
+                    font-size: 2rem;
+                    color: var(--accent-color);
+                    text-shadow: var(--neon-glow);
+                    margin-bottom: 25px;
+                    letter-spacing: 1px;
+                }
+                .search-bar-wrapper {
+                    display: flex;
+                    background: var(--card-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 30px;
+                    padding: 6px 15px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    transition: all 0.3s ease;
+                    margin-bottom: 30px;
+                }
+                .search-bar-wrapper:focus-within {
+                    border-color: var(--accent-color);
+                    box-shadow: var(--neon-glow);
+                }
+                .search-input {
+                    flex: 1;
+                    background: transparent;
+                    border: none;
+                    outline: none;
+                    color: var(--text-color);
+                    font-family: var(--font-family);
+                    font-size: 1.1rem;
+                    padding: 10px;
+                }
+                .search-btn {
+                    background: var(--accent-color);
+                    color: #000;
+                    border: none;
+                    border-radius: 20px;
+                    padding: 0 25px;
+                    font-family: var(--font-family);
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    transition: opacity 0.2s;
+                }
+                .search-btn:hover {
+                    opacity: 0.9;
+                }
+                .frame-wrapper {
+                    width: 100%;
+                    height: calc(100vh - 260px);
+                    background: #fff;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    display: none;
+                }
+                .search-frame {
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                }
+            </style>
+            
+            <div class="search-container">
+                <h2 class="search-title">Internal Search Engine</h2>
+                <div class="search-bar-wrapper">
+                    <input type="text" id="engine-query" class="search-input" placeholder="Search the web securely...">
+                    <button class="search-btn" onclick="executeInternalSearch()">Search</button>
+                </div>
+                
+                <div id="sandbox-frame-wrapper" class="frame-wrapper">
+                    <iframe id="search-viewport" class="search-frame" name="search-viewport" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section id="settings-panel" class="tab-panel">
+            <style>
+                .settings-grid {
+                    max-width: 900px;
+                    margin: 0 auto;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 25px;
+                }
+                .settings-card {
+                    background: var(--card-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 10px;
+                    padding: 25px;
+                }
+                .settings-card h3 {
+                    color: var(--accent-color);
+                    text-shadow: var(--neon-glow);
+                    font-size: 1.2rem;
+                    margin-bottom: 15px;
+                    letter-spacing: 1px;
+                }
+                .settings-desc {
+                    color: var(--text-muted);
+                    font-size: 0.85rem;
+                    margin-bottom: 20px;
+                    line-height: 1.4;
+                }
+                .color-picker-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                }
+                .color-btn {
+                    padding: 10px;
+                    border-radius: 6px;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    background: rgba(0,0,0,0.2);
+                    color: #fff;
+                    cursor: pointer;
+                    font-family: var(--font-family);
+                    font-size: 0.8rem;
+                    text-transform: capitalize;
+                    transition: all 0.2s;
+                }
+                .color-btn:hover {
+                    border-color: rgba(255,255,255,0.4);
+                }
+                .color-btn.active {
+                    background: var(--accent-color);
+                    color: #000;
+                    font-weight: bold;
+                    box-shadow: var(--neon-glow);
+                }
+                .input-field {
+                    width: 100%;
+                    padding: 12px;
+                    background: rgba(0,0,0,0.3);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 6px;
+                    color: #fff;
+                    font-family: var(--font-family);
+                    font-size: 0.9rem;
+                    outline: none;
+                    transition: border-color 0.2s;
+                }
+                .input-field:focus {
+                    border-color: var(--accent-color);
+                }
+                
+                .hotkey-record-btn {
+                    width: 100%;
+                    padding: 15px;
+                    background: rgba(0,0,0,0.4);
+                    border: 1px solid var(--accent-color);
+                    border-radius: 8px;
+                    color: var(--accent-color);
+                    text-shadow: var(--neon-glow);
+                    box-shadow: inset 0 0 4px rgba(255,255,255,0.05);
+                    font-family: var(--font-family);
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    text-align: center;
+                    transition: all 0.3s ease;
+                }
+                .hotkey-record-btn.listening {
+                    background: rgba(255, 0, 0, 0.1);
+                    border-color: #ff3333;
+                    color: #ff3333;
+                    animation: pulseBorder 1.5s infinite ease-in-out;
+                }
+                @keyframes pulseBorder {
+                    0% { box-shadow: 0 0 5px rgba(255,51,51,0.3); }
+                    50% { box-shadow: 0 0 15px rgba(255,51,51,0.7); }
+                    100% { box-shadow: 0 0 5px rgba(255,51,51,0.3); }
+                }
+
+                .level-selector-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .level-item {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 12px 15px;
+                    background: rgba(0,0,0,0.2);
+                    border: 1px solid rgba(255,255,255,0.05);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .level-item:hover {
+                    border-color: rgba(255,255,255,0.15);
+                }
+                .level-item.active {
+                    border-color: var(--accent-color);
+                    background: rgba(255,255,255,0.02);
+                }
+                .level-info h4 {
+                    font-size: 0.9rem;
+                    color: var(--text-color);
+                }
+                .level-info p {
+                    font-size: 0.75rem;
+                    color: var(--text-muted);
+                }
+                .radio-indicator {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    border: 2px solid var(--text-muted);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .level-item.active .radio-indicator {
+                    border-color: var(--accent-color);
+                    background: var(--accent-color);
+                    box-shadow: var(--neon-glow);
+                }
+            </style>
+
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3>Theme Color</h3>
+                    <p class="settings-desc">Change the UI accent highlight and neon emitter signatures across the console platform.</p>
+                    <div class="color-picker-grid">
+                        <button class="color-btn active" data-color="white" onclick="updateThemeColor('white')">White</button>
+                        <button class="color-btn" data-color="red" onclick="updateThemeColor('red')">Red</button>
+                        <button class="color-btn" data-color="orange" onclick="updateThemeColor('orange')">Orange</button>
+                        <button class="color-btn" data-color="yellow" onclick="updateThemeColor('yellow')">Yellow</button>
+                        <button class="color-btn" data-color="green" onclick="updateThemeColor('green')">Green</button>
+                        <button class="color-btn" data-color="cyan" onclick="updateThemeColor('cyan')">Cyan</button>
+                        <button class="color-btn" data-color="blue" onclick="updateThemeColor('blue')">Blue</button>
+                        <button class="color-btn" data-color="purple" onclick="updateThemeColor('purple')">Purple</button>
+                        <button class="color-btn" data-color="pink" onclick="updateThemeColor('pink')">Pink</button>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Panic Button Hotkey</h3>
+                    <p class="settings-desc">Pressing this key instantly hides your activity and redirects you to a sterile educational URL interface.</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display:block; margin-bottom: 5px;">TRIGGER KEY (CLICK FIELD TO RECORD)</span>
+                            <button id="panic-key-btn" class="hotkey-record-btn" onclick="startHotkeyRecording()">`</button>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display:block; margin-bottom: 5px;">REDIRECT TARGET (URL)</span>
+                            <input type="text" id="panic-url-input" class="input-field" value="https://google.com" placeholder="https://google.com">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Tab Mask Engine</h3>
+                    <p class="settings-desc">Dynamically masks this site's browser profile properties including title signatures and favicon logs.</p>
+                    <div class="color-picker-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <button class="color-btn" id="mask-drive-btn" onclick="applyTabMask('drive')">Google Drive</button>
+                        <button class="color-btn" id="mask-classroom-btn" onclick="applyTabMask('classroom')">Classroom</button>
+                        <button class="color-btn" id="mask-canvas-btn" onclick="applyTabMask('canvas')">Canvas LMS</button>
+                        <button class="color-btn active" id="mask-reset-btn" onclick="applyTabMask('reset')">Unmasked</button>
+                    </div>
+                </div>
+
+                <div class="settings-card" style="grid-column: span 1;">
+                    <h3>Look Level Engine</h3>
+                    <p class="settings-desc">Adjust rendering engine configurations to adjust background script execution feeds and typographical matrices.</p>
+                    <div class="level-selector-list">
+                        <div class="level-item active" id="lvl-item-4" onclick="updateLookLevel(4)">
+                            <div class="level-info">
+                                <h4>Level 4 (Default)</h4>
+                                <p>Orbitron typography, Matrix backdrop stream, neon profiles.</p>
+                            </div>
+                            <div class="radio-indicator"></div>
+                        </div>
+                        <div class="level-item" id="lvl-item-3" onclick="updateLookLevel(3)">
+                            <div class="level-info">
+                                <h4>Level 3</h4>
+                                <p>Orbitron typography, hidden stream, active neon profiles.</p>
+                            </div>
+                            <div class="radio-indicator"></div>
+                        </div>
+                        <div class="level-item" id="lvl-item-2" onclick="updateLookLevel(2)">
+                            <div class="level-info">
+                                <h4>Level 2</h4>
+                                <p>Orbitron typography, active background streams, flat assets.</p>
+                            </div>
+                            <div class="radio-indicator"></div>
+                        </div>
+                        <div class="level-item" id="lvl-item-1" onclick="updateLookLevel(1)">
+                            <div class="level-info">
+                                <h4>Level 1 (Stealth)</h4>
+                                <p>Arial typography, hidden assets, pure system layout.</p>
+                            </div>
+                            <div class="radio-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        /* --- State Variable Declarations --- */
+        let currentTab = 'home';
+        let panicKey = '`';
+        let lookLevel = 4;
+        let isRecordingHotkey = false;
+
+        /* --- Intro Sequence Timing Logic --- */
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeMatrixEngine();
+
+            // Timeline Sequence:
+            // After 2 seconds, transition from Stage 1 to Stage 2 text inside overlay
+            setTimeout(() => {
+                const stage1 = document.getElementById('intro-text-stage1');
+                const stage2 = document.getElementById('intro-text-stage2');
+                if (stage1 && stage2) {
+                    stage1.style.display = 'none';
+                    stage2.style.display = 'flex';
+                }
+            }, 2000);
+
+            // After 10 seconds total, trigger the fade-out transition on entire overlay
+            setTimeout(() => {
+                const overlay = document.getElementById('intro-landing-overlay');
+                if (overlay) {
+                    overlay.classList.add('fade-out-active');
+                    // Completely drop from layout rendering after transition finishes
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 1000);
+                }
+            }, 10000);
+        });
+
+        /* --- Tab Management Operations --- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const targetPanel = document.getElementById(`${tabId}-panel`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${tabId}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            currentTab = tabId;
+        }
+
+        /* --- In-Site Proxy Frame Controls --- */
+        function openProxyFrame(url) {
+            const container = document.getElementById('proxy-view-container');
+            const frame = document.getElementById('proxy-internal-frame');
+            const urlDisplay = document.getElementById('proxy-current-url');
+
+            if (container && frame && urlDisplay) {
+                urlDisplay.textContent = `Target: ${url}`;
+                frame.src = url;
+                container.style.display = 'flex';
+            }
+        }
+
+        function closeProxyFrame() {
+            const container = document.getElementById('proxy-view-container');
+            const frame = document.getElementById('proxy-internal-frame');
+            
+            if (container && frame) {
+                frame.src = 'about:blank';
+                container.style.display = 'none';
+            }
+        }
+
+        /* --- Internal Sandboxed Search Engine Framework --- */
+        function executeInternalSearch() {
+            const queryInput = document.getElementById('engine-query');
+            const wrapper = document.getElementById('sandbox-frame-wrapper');
+            const viewport = document.getElementById('search-viewport');
+            
+            let query = queryInput.value.trim();
+            if (!query) return;
+
+            const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+            if (urlPattern.test(query)) {
+                alert("URL Navigation Blocked: For security and site compatibility, direct link browsing within the iframe is restricted. Please look up terms or keywords instead.");
+                return;
+            }
+
+            const targetUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&igu=1`;
+            
+            viewport.src = targetUrl;
+            wrapper.style.display = 'block';
+        }
+
+        document.getElementById('engine-query')?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                executeInternalSearch();
+            }
+        });
+
+        /* --- System Dashboard Theme Parameters Modifiers --- */
+        function updateThemeColor(colorName) {
+            document.documentElement.setAttribute('data-theme', colorName);
+            
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                if (btn.getAttribute('data-color')) {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            const targetBtn = document.querySelector(`.color-btn[data-color="${colorName}"]`);
+            if (targetBtn) targetBtn.classList.add('active');
+        }
+
+        /* --- Tab Cloaking & Profile Management Engine --- */
+        const maskProfiles = {
+  drive: { 
+    title: 'My Drive - Google Drive', 
+    icon: 'data:image/jpeg;base64,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',
+    type: 'image/png'
+  },
+  classroom: { 
+    title: 'Home', 
+    icon: 'https://ssl.gstatic.com/images/branding/product/1x/classroom_32dp.png',
+    type: 'image/png'
+  },
+  canvas: { 
+    title: 'Dashboard', 
+    icon: 'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico',
+    type: 'image/x-icon'
+  }
+};
+
+function applyTabMask(profileKey) {
+  ['drive', 'classroom', 'canvas', 'reset'].forEach(key => {
+    document.getElementById(`mask-${key}-btn`)?.classList.remove('active');
+  });
+  document.getElementById(`mask-${profileKey}-btn`)?.classList.add('active');
+
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+
+  if (profileKey === 'reset') {
+    document.title = "Decrypted";
+    link.href = "data:image/jpeg;base64,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";
+    link.type = "image/png"; 
+  } else {
+    const profile = maskProfiles[profileKey];
+    if (profile) {
+      document.title = profile.title;
+      link.href = profile.icon;
+      link.type = profile.type || "image/x-icon";
+    }
+  }
+}
+
+        
+/* --- Panic Mode Core Engine Protocols --- */
+        function startHotkeyRecording() {
+            isRecordingHotkey = true;
+            const btn = document.getElementById('panic-key-btn');
+            if (btn) {
+                btn.textContent = "PRESS ANY KEY...";
+                btn.classList.add('listening');
+            }
+        }
+
+        window.addEventListener('keydown', function(e) {
+            if (isRecordingHotkey) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!e.key) return;
+
+                panicKey = e.key;
+                isRecordingHotkey = false;
+
+                const btn = document.getElementById('panic-key-btn');
+                if (btn) {
+                    btn.classList.remove('listening');
+                    btn.textContent = panicKey === ' ' ? 'Space' : panicKey;
+                }
+                return;
+            }
+
+            if (e.key === panicKey) {
+                const panicUrlInput = document.getElementById('panic-url-input');
+                let targetRedirect = panicUrlInput ? panicUrlInput.value.trim() : 'https://google.com';
+                
+                if (!/^https?:\/\//i.test(targetRedirect)) {
+                    targetRedirect = 'https://' + targetRedirect;
+                }
+                
+                window.location.href = targetRedirect;
+            }
+        });
+
+        /* --- Look Level UI Interface Profiles Adjustments --- */
+        function updateLookLevel(level) {
+            lookLevel = level;
+            document.documentElement.setAttribute('data-level', level.toString());
+            
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`lvl-item-${i}`)?.classList.remove('active');
+            }
+            
+            document.getElementById(`lvl-item-${level}`)?.classList.add('active');
+            
+            if (level === 4 || level === 2) {
+                initializeMatrixEngine();
+            }
+        }
+
+        /* --- Matrix Digital Rain Background Graphics Script --- */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas?.getContext('2d');
+        let animationFrameId = null;
+
+        function initializeMatrixEngine() {
+            if (!canvas || !ctx) return;
+            
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789αβγδεζηθικλμνξοπρστυφχψω";
+            const fontSize = 14;
+            const columns = Math.floor(canvas.width / fontSize);
+            
+            const drops = [];
+            for (let x = 0; x < columns; x++) {
+                drops[x] = Math.random() * -100;
+            }
+
+            function drawMatrixStream() {
+                if (lookLevel === 1 || lookLevel === 3) return;
+
+                ctx.fillStyle = 'rgba(10, 10, 12, 0.06)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+                ctx.fillStyle = currentAccent || '#ffffff';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+                animationFrameId = requestAnimationFrame(drawMatrixStream);
+            }
+
+            drawMatrixStream();
+        }
+
+        window.addEventListener('resize', () => {
+            if (lookLevel === 4 || lookLevel === 2) {
+                initializeMatrixEngine();
+            }
+        });
+    </script>
+</body>
+</html>
